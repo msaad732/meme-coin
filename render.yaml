@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: memetracker-dashboard
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run streamlit_app.py --server.port $PORT --server.address 0.0.0.0
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: memetracker-db
+          property: connectionString
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+  - type: worker
+    name: memetracker-bot
+    env: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python ingestion_worker.py
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: memetracker-db
+          property: connectionString
+      - key: DISCORD_TOKEN
+        # Set this in the Render Dashboard (no default)
+        value: ""
+      - key: PYTHON_VERSION
+        value: 3.11.9
+
+databases:
+  - name: memetracker-db
+    plan: free
+
